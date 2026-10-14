@@ -1,0 +1,236 @@
+DBMS Experiment 4 - ByteXL Execution Output
+
++--------+-------------+-----------------+-----------+
+| emp_id | full_name   | department_name | salary    |
++--------+-------------+-----------------+-----------+
+|   1001 | Employee 01 | Engineering     |  68000.00 |
+|   1002 | Employee 02 | Engineering     |  72000.00 |
+|   1003 | Employee 03 | Engineering     |  91000.00 |
+|   1004 | Employee 04 | Engineering     |  61000.00 |
+|   1005 | Employee 05 | Engineering     |  83000.00 |
+|   1006 | Employee 06 | Engineering     | 105000.00 |
+|   1019 | Employee 19 | Finance         |  60000.00 |
+|   1020 | Employee 20 | Finance         |  76000.00 |
+|   1021 | Employee 21 | Finance         |  99000.00 |
+|   1022 | Employee 22 | Finance         |  71000.00 |
+|   1023 | Employee 23 | Finance         |  64000.00 |
+|   1024 | Employee 24 | Finance         |  79000.00 |
+|   1013 | Employee 13 | Human Resources |  57000.00 |
+|   1014 | Employee 14 | Human Resources |  52000.00 |
+|   1015 | Employee 15 | Human Resources |  88000.00 |
+|   1016 | Employee 16 | Human Resources |  63000.00 |
+|   1017 | Employee 17 | Human Resources |  59000.00 |
+|   1018 | Employee 18 | Human Resources |  55000.00 |
+|   1025 | Employee 25 | Research        |  67000.00 |
+|   1026 | Employee 26 | Research        |  92000.00 |
+|   1027 | Employee 27 | Research        |  74000.00 |
+|   1028 | Employee 28 | Research        | 108000.00 |
+|   1029 | Employee 29 | Research        |  69000.00 |
+|   1030 | Employee 30 | Research        |  95000.00 |
+|   1007 | Employee 07 | Sales           |  54000.00 |
+|   1008 | Employee 08 | Sales           |  62000.00 |
+|   1009 | Employee 09 | Sales           |  78000.00 |
+|   1010 | Employee 10 | Sales           |  51000.00 |
+|   1011 | Employee 11 | Sales           |  98000.00 |
+|   1012 | Employee 12 | Sales           |  65000.00 |
++--------+-------------+-----------------+-----------+
++-----------------+--------+-------------+
+| department_name | emp_id | full_name   |
++-----------------+--------+-------------+
+| Engineering     |   1001 | Employee 01 |
+| Engineering     |   1002 | Employee 02 |
+| Engineering     |   1003 | Employee 03 |
+| Engineering     |   1004 | Employee 04 |
+| Engineering     |   1005 | Employee 05 |
+| Engineering     |   1006 | Employee 06 |
+| Finance         |   1019 | Employee 19 |
+| Finance         |   1020 | Employee 20 |
+| Finance         |   1021 | Employee 21 |
+| Finance         |   1022 | Employee 22 |
+| Finance         |   1023 | Employee 23 |
+| Finance         |   1024 | Employee 24 |
+| Human Resources |   1013 | Employee 13 |
+| Human Resources |   1014 | Employee 14 |
+| Human Resources |   1015 | Employee 15 |
+| Human Resources |   1016 | Employee 16 |
+| Human Resources |   1017 | Employee 17 |
+| Human Resources |   1018 | Employee 18 |
+| Research        |   1025 | Employee 25 |
+| Research        |   1026 | Employee 26 |
+| Research        |   1027 | Employee 27 |
+| Research        |   1028 | Employee 28 |
+| Research        |   1029 | Employee 29 |
+| Research        |   1030 | Employee 30 |
+| Sales           |   1007 | Employee 07 |
+| Sales           |   1008 | Employee 08 |
+| Sales           |   1009 | Employee 09 |
+| Sales           |   1010 | Employee 10 |
+| Sales           |   1011 | Employee 11 |
+| Sales           |   1012 | Employee 12 |
++-----------------+--------+-------------+
++-----------------+--------------+--------------+
+| department_name | employee_one | employee_two |
++-----------------+--------------+--------------+
+| Engineering     | Employee 01  | Employee 02  |
+| Engineering     | Employee 01  | Employee 03  |
+| Engineering     | Employee 01  | Employee 04  |
+| Engineering     | Employee 01  | Employee 05  |
+| Engineering     | Employee 01  | Employee 06  |
+| Engineering     | Employee 02  | Employee 03  |
+| Engineering     | Employee 02  | Employee 04  |
+| Engineering     | Employee 02  | Employee 05  |
+| Engineering     | Employee 02  | Employee 06  |
+| Engineering     | Employee 03  | Employee 04  |
+| Engineering     | Employee 03  | Employee 05  |
+| Engineering     | Employee 03  | Employee 06  |
+| Engineering     | Employee 04  | Employee 05  |
+| Engineering     | Employee 04  | Employee 06  |
+| Engineering     | Employee 05  | Employee 06  |
+| Finance         | Employee 19  | Employee 20  |
+| Finance         | Employee 19  | Employee 21  |
+| Finance         | Employee 19  | Employee 22  |
+| Finance         | Employee 19  | Employee 23  |
+| Finance         | Employee 19  | Employee 24  |
+| Finance         | Employee 20  | Employee 21  |
+| Finance         | Employee 20  | Employee 22  |
+| Finance         | Employee 20  | Employee 23  |
+| Finance         | Employee 20  | Employee 24  |
+| Finance         | Employee 21  | Employee 22  |
+| Finance         | Employee 21  | Employee 23  |
+| Finance         | Employee 21  | Employee 24  |
+| Finance         | Employee 22  | Employee 23  |
+| Finance         | Employee 22  | Employee 24  |
+| Finance         | Employee 23  | Employee 24  |
+| Human Resources | Employee 13  | Employee 14  |
+| Human Resources | Employee 13  | Employee 15  |
+| Human Resources | Employee 13  | Employee 16  |
+| Human Resources | Employee 13  | Employee 17  |
+| Human Resources | Employee 13  | Employee 18  |
+| Human Resources | Employee 14  | Employee 15  |
+| Human Resources | Employee 14  | Employee 16  |
+| Human Resources | Employee 14  | Employee 17  |
+| Human Resources | Employee 14  | Employee 18  |
+| Human Resources | Employee 15  | Employee 16  |
+| Human Resources | Employee 15  | Employee 17  |
+| Human Resources | Employee 15  | Employee 18  |
+| Human Resources | Employee 16  | Employee 17  |
+| Human Resources | Employee 16  | Employee 18  |
+| Human Resources | Employee 17  | Employee 18  |
+| Research        | Employee 25  | Employee 26  |
+| Research        | Employee 25  | Employee 27  |
+| Research        | Employee 25  | Employee 28  |
+| Research        | Employee 25  | Employee 29  |
+| Research        | Employee 25  | Employee 30  |
+| Research        | Employee 26  | Employee 27  |
+| Research        | Employee 26  | Employee 28  |
+| Research        | Employee 26  | Employee 29  |
+| Research        | Employee 26  | Employee 30  |
+| Research        | Employee 27  | Employee 28  |
+| Research        | Employee 27  | Employee 29  |
+| Research        | Employee 27  | Employee 30  |
+| Research        | Employee 28  | Employee 29  |
+| Research        | Employee 28  | Employee 30  |
+| Research        | Employee 29  | Employee 30  |
+| Sales           | Employee 07  | Employee 08  |
+| Sales           | Employee 07  | Employee 09  |
+| Sales           | Employee 07  | Employee 10  |
+| Sales           | Employee 07  | Employee 11  |
+| Sales           | Employee 07  | Employee 12  |
+| Sales           | Employee 08  | Employee 09  |
+| Sales           | Employee 08  | Employee 10  |
+| Sales           | Employee 08  | Employee 11  |
+| Sales           | Employee 08  | Employee 12  |
+| Sales           | Employee 09  | Employee 10  |
+| Sales           | Employee 09  | Employee 11  |
+| Sales           | Employee 09  | Employee 12  |
+| Sales           | Employee 10  | Employee 11  |
+| Sales           | Employee 10  | Employee 12  |
+| Sales           | Employee 11  | Employee 12  |
++-----------------+--------------+--------------+
++-------------+-----------------+----------------------+
+| full_name   | project_name    | project_role         |
++-------------+-----------------+----------------------+
+| Employee 01 | Campus Connect  | Database Analyst     |
+| Employee 08 | Campus Connect  | Sales Consultant     |
+| Employee 10 | Campus Connect  | Sales Coordinator    |
+| Employee 16 | Campus Connect  | Training Coordinator |
+| Employee 29 | Campus Connect  | Researcher           |
+| Employee 08 | Customer Portal | Business Analyst     |
+| Employee 11 | Customer Portal | Project Sponsor      |
+| Employee 17 | Customer Portal | HR Coordinator       |
+| Employee 20 | Customer Portal | Cost Analyst         |
+| Employee 30 | Customer Portal | Data Scientist       |
+| Employee 01 | Data Warehouse  | Data Consultant      |
+| Employee 03 | Data Warehouse  | Technical Lead       |
+| Employee 05 | Data Warehouse  | Data Engineer        |
+| Employee 20 | Data Warehouse  | Financial Analyst    |
+| Employee 24 | Data Warehouse  | Financial Analyst    |
+| Employee 25 | Data Warehouse  | Researcher           |
+| Employee 04 | Mobile App      | QA Engineer          |
+| Employee 14 | Mobile App      | Recruiter            |
+| Employee 15 | Mobile App      | Training Lead        |
+| Employee 27 | Mobile App      | Research Analyst     |
+| Employee 13 | Payroll Upgrade | HR Coordinator       |
+| Employee 15 | Payroll Upgrade | Project Lead         |
+| Employee 19 | Payroll Upgrade | Accountant           |
+| Employee 07 | Sales Analytics | Sales Coordinator    |
+| Employee 09 | Sales Analytics | Account Manager      |
+| Employee 12 | Sales Analytics | Reporting Analyst    |
+| Employee 23 | Sales Analytics | Accountant           |
+| Employee 05 | Security Audit  | Security Analyst     |
+| Employee 06 | Security Audit  | Project Lead         |
+| Employee 18 | Security Audit  | Recruiter            |
+| Employee 22 | Security Audit  | Auditor              |
+| Employee 26 | Security Audit  | Security Researcher  |
+| Employee 28 | Security Audit  | Project Lead         |
+| Employee 02 | Smart Inventory | Developer            |
+| Employee 03 | Smart Inventory | Technical Reviewer   |
+| Employee 12 | Smart Inventory | Business Analyst     |
+| Employee 21 | Smart Inventory | Project Sponsor      |
+| Employee 26 | Smart Inventory | Data Scientist       |
++-------------+-----------------+----------------------+
++-------------+-----------------+-----------+
+| full_name   | department_name | salary    |
++-------------+-----------------+-----------+
+| Employee 06 | Engineering     | 105000.00 |
+| Employee 03 | Engineering     |  91000.00 |
+| Employee 05 | Engineering     |  83000.00 |
+| Employee 21 | Finance         |  99000.00 |
+| Employee 24 | Finance         |  79000.00 |
+| Employee 20 | Finance         |  76000.00 |
+| Employee 15 | Human Resources |  88000.00 |
+| Employee 16 | Human Resources |  63000.00 |
+| Employee 28 | Research        | 108000.00 |
+| Employee 30 | Research        |  95000.00 |
+| Employee 26 | Research        |  92000.00 |
+| Employee 11 | Sales           |  98000.00 |
+| Employee 09 | Sales           |  78000.00 |
++-------------+-----------------+-----------+
++---------+-----------------+
+| dept_id | department_name |
++---------+-----------------+
+|       1 | Engineering     |
+|       4 | Finance         |
+|       5 | Research        |
+|       2 | Sales           |
++---------+-----------------+
++--------+-------------+
+| emp_id | full_name   |
++--------+-------------+
+|   1001 | Employee 01 |
++--------+-------------+
++--------+-------------+
+| emp_id | full_name   |
++--------+-------------+
+|   1008 | Employee 08 |
+|   1010 | Employee 10 |
+|   1016 | Employee 16 |
+|   1029 | Employee 29 |
++--------+-------------+
++----+--------------------+-------+------------+-------+-----------------------------+-----------------------------+---------+----------------------------------+------+----------+-------------+
+| id | select_type        | table | partitions | type  | possible_keys               | key                         | key_len | ref                              | rows | filtered | Extra       |
++----+--------------------+-------+------------+-------+-----------------------------+-----------------------------+---------+----------------------------------+------+----------+-------------+
+|  1 | PRIMARY            | d     | NULL       | index | PRIMARY                     | department_name             | 202     | NULL                             |    5 |   100.00 | Using index |
+|  1 | PRIMARY            | e     | NULL       | ref   | fk_exp3_employee_department | fk_exp3_employee_department | 4       | sandbox_db.d.dept_id |    6 |   100.00 | Using where |
+|  2 | DEPENDENT SUBQUERY | e2    | NULL       | ref   | fk_exp3_employee_department | fk_exp3_employee_department | 4       | sandbox_db.e.dept_id |    6 |   100.00 | NULL        |
++----+--------------------+-------+------------+-------+-----------------------------+-----------------------------+---------+----------------------------------+------+----------+-------------+
