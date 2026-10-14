@@ -1,0 +1,170 @@
+/* DBMS Practical - Experiment 6
+   Prepared by: Prince Bhandari
+   Topic: Stored procedure for employee transfer, validation, salary trigger, and audit logging
+   Dialect: MySQL 8
+*/
+
+CREATE TABLE IF NOT EXISTS exp3_department (
+    dept_id INT PRIMARY KEY,
+    department_name VARCHAR(50) NOT NULL UNIQUE,
+    location VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS exp3_project (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(80) NOT NULL UNIQUE,
+    budget DECIMAL(12, 2) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS exp3_employee (
+    emp_id INT PRIMARY KEY,
+    full_name VARCHAR(80) NOT NULL,
+    dept_id INT NOT NULL,
+    designation VARCHAR(50) NOT NULL,
+    salary DECIMAL(10, 2) NOT NULL,
+    hire_date DATE NOT NULL,
+    CONSTRAINT fk_exp3_employee_department
+        FOREIGN KEY (dept_id) REFERENCES exp3_department(dept_id)
+);
+
+CREATE TABLE IF NOT EXISTS exp3_employee_project (
+    emp_id INT NOT NULL,
+    project_id INT NOT NULL,
+    project_role VARCHAR(60) NOT NULL,
+    assigned_on DATE NOT NULL,
+    PRIMARY KEY (emp_id, project_id),
+    CONSTRAINT fk_exp3_ep_employee
+        FOREIGN KEY (emp_id) REFERENCES exp3_employee(emp_id),
+    CONSTRAINT fk_exp3_ep_project
+        FOREIGN KEY (project_id) REFERENCES exp3_project(project_id)
+);
+
+INSERT IGNORE INTO exp3_department (dept_id, department_name, location) VALUES
+(1, 'Engineering', 'Lucknow'),
+(2, 'Sales', 'Kanpur'),
+(3, 'Human Resources', 'Lucknow'),
+(4, 'Finance', 'Noida'),
+(5, 'Research', 'Lucknow');
+
+INSERT IGNORE INTO exp3_project (project_id, project_name, budget) VALUES
+(101, 'Campus Connect', 850000.00),
+(102, 'Smart Inventory', 1200000.00),
+(103, 'Customer Portal', 975000.00),
+(104, 'Payroll Upgrade', 640000.00),
+(105, 'Sales Analytics', 730000.00),
+(106, 'Data Warehouse', 1500000.00),
+(107, 'Mobile App', 1100000.00),
+(108, 'Security Audit', 520000.00);
+
+INSERT IGNORE INTO exp3_employee
+    (emp_id, full_name, dept_id, designation, salary, hire_date) VALUES
+(1001, 'Employee 01', 1, 'Database Analyst', 68000.00, '2022-07-11'),
+(1002, 'Employee 02', 1, 'Software Engineer', 72000.00, '2021-03-15'),
+(1003, 'Employee 03', 1, 'Senior Engineer', 91000.00, '2019-08-20'),
+(1004, 'Employee 04', 1, 'QA Engineer', 61000.00, '2023-01-09'),
+(1005, 'Employee 05', 1, 'Data Engineer', 83000.00, '2020-11-02'),
+(1006, 'Employee 06', 1, 'Team Lead', 105000.00, '2018-06-18'),
+(1007, 'Employee 07', 2, 'Sales Executive', 54000.00, '2022-02-14'),
+(1008, 'Employee 08', 2, 'Sales Analyst', 62000.00, '2021-09-06'),
+(1009, 'Employee 09', 2, 'Account Manager', 78000.00, '2020-04-27'),
+(1010, 'Employee 10', 2, 'Sales Executive', 51000.00, '2023-05-08'),
+(1011, 'Employee 11', 2, 'Regional Manager', 98000.00, '2018-12-03'),
+(1012, 'Employee 12', 2, 'Sales Analyst', 65000.00, '2022-10-17'),
+(1013, 'Employee 13', 3, 'HR Executive', 57000.00, '2021-01-12'),
+(1014, 'Employee 14', 3, 'Recruiter', 52000.00, '2022-06-20'),
+(1015, 'Employee 15', 3, 'HR Manager', 88000.00, '2019-02-25'),
+(1016, 'Employee 16', 3, 'Training Specialist', 63000.00, '2020-07-13'),
+(1017, 'Employee 17', 3, 'HR Executive', 59000.00, '2023-03-01'),
+(1018, 'Employee 18', 3, 'Recruiter', 55000.00, '2021-11-29'),
+(1019, 'Employee 19', 4, 'Accountant', 60000.00, '2022-04-04'),
+(1020, 'Employee 20', 4, 'Financial Analyst', 76000.00, '2020-09-21'),
+(1021, 'Employee 21', 4, 'Finance Manager', 99000.00, '2018-05-16'),
+(1022, 'Employee 22', 4, 'Auditor', 71000.00, '2021-12-06'),
+(1023, 'Employee 23', 4, 'Accountant', 64000.00, '2023-02-13'),
+(1024, 'Employee 24', 4, 'Financial Analyst', 79000.00, '2019-10-07'),
+(1025, 'Employee 25', 5, 'Research Associate', 67000.00, '2021-06-28'),
+(1026, 'Employee 26', 5, 'Data Scientist', 92000.00, '2020-01-20'),
+(1027, 'Employee 27', 5, 'Research Analyst', 74000.00, '2022-08-08'),
+(1028, 'Employee 28', 5, 'Project Lead', 108000.00, '2018-03-12'),
+(1029, 'Employee 29', 5, 'Research Associate', 69000.00, '2023-04-17'),
+(1030, 'Employee 30', 5, 'Data Scientist', 95000.00, '2019-07-22');
+
+INSERT IGNORE INTO exp3_employee_project
+    (emp_id, project_id, project_role, assigned_on) VALUES
+(1001, 101, 'Database Analyst', '2024-01-10'),
+(1002, 102, 'Developer', '2024-01-12'),
+(1003, 106, 'Technical Lead', '2024-01-15'),
+(1004, 107, 'QA Engineer', '2024-01-18'),
+(1005, 106, 'Data Engineer', '2024-01-20'),
+(1006, 108, 'Project Lead', '2024-01-22'),
+(1007, 105, 'Sales Coordinator', '2024-02-01'),
+(1008, 103, 'Business Analyst', '2024-02-03'),
+(1009, 105, 'Account Manager', '2024-02-05'),
+(1010, 101, 'Sales Coordinator', '2024-02-07'),
+(1011, 103, 'Project Sponsor', '2024-02-09'),
+(1012, 102, 'Business Analyst', '2024-02-11'),
+(1013, 104, 'HR Coordinator', '2024-03-01'),
+(1014, 107, 'Recruiter', '2024-03-03'),
+(1015, 104, 'Project Lead', '2024-03-05'),
+(1016, 101, 'Training Coordinator', '2024-03-07'),
+(1017, 103, 'HR Coordinator', '2024-03-09'),
+(1018, 108, 'Recruiter', '2024-03-11'),
+(1019, 104, 'Accountant', '2024-04-01'),
+(1020, 106, 'Financial Analyst', '2024-04-03'),
+(1021, 102, 'Project Sponsor', '2024-04-05'),
+(1022, 108, 'Auditor', '2024-04-07'),
+(1023, 105, 'Accountant', '2024-04-09'),
+(1024, 106, 'Financial Analyst', '2024-04-11'),
+(1025, 106, 'Researcher', '2024-05-01'),
+(1026, 102, 'Data Scientist', '2024-05-03'),
+(1027, 107, 'Research Analyst', '2024-05-05'),
+(1028, 108, 'Project Lead', '2024-05-07'),
+(1029, 101, 'Researcher', '2024-05-09'),
+(1030, 103, 'Data Scientist', '2024-05-11'),
+(1001, 106, 'Data Consultant', '2024-06-01'),
+(1003, 102, 'Technical Reviewer', '2024-06-02'),
+(1005, 108, 'Security Analyst', '2024-06-03'),
+(1008, 101, 'Sales Consultant', '2024-06-04'),
+(1012, 105, 'Reporting Analyst', '2024-06-05'),
+(1015, 107, 'Training Lead', '2024-06-06'),
+(1020, 103, 'Cost Analyst', '2024-06-07'),
+(1026, 108, 'Security Researcher', '2024-06-08');
+
+
+/* DBMS Practical - Experiment 6: Stored Procedures and Triggers
+   Prepared by: Prince Bhandari
+   Topic: validated employee transfer, salary guard, and audit logging
+*/
+CREATE TABLE IF NOT EXISTS exp6_salary_audit(audit_id INT AUTO_INCREMENT PRIMARY KEY,emp_id INT NOT NULL,old_salary DECIMAL(10,2) NOT NULL,new_salary DECIMAL(10,2) NOT NULL,changed_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,changed_by VARCHAR(100) NOT NULL DEFAULT 'experiment6');
+DROP PROCEDURE IF EXISTS transfer_employee;
+DROP TRIGGER IF EXISTS exp6_validate_salary;
+DROP TRIGGER IF EXISTS exp6_audit_salary;
+DELIMITER //
+CREATE PROCEDURE transfer_employee(IN p_emp_id INT,IN p_new_dept_id INT)
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM exp3_employee WHERE emp_id=p_emp_id) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Employee does not exist';
+ ELSEIF NOT EXISTS(SELECT 1 FROM exp3_department WHERE dept_id=p_new_dept_id) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Department does not exist';
+ ELSE UPDATE exp3_employee SET dept_id=p_new_dept_id WHERE emp_id=p_emp_id; SELECT 'Transfer completed' AS status,p_emp_id AS emp_id,p_new_dept_id AS new_dept_id; END IF;
+END//
+CREATE TRIGGER exp6_validate_salary BEFORE UPDATE ON exp3_employee FOR EACH ROW
+BEGIN IF NEW.salary<0 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Salary must be zero or greater'; END IF; END//
+CREATE TRIGGER exp6_audit_salary AFTER UPDATE ON exp3_employee FOR EACH ROW
+BEGIN IF OLD.salary<>NEW.salary THEN INSERT INTO exp6_salary_audit(emp_id,old_salary,new_salary,changed_by) VALUES(OLD.emp_id,OLD.salary,NEW.salary,'Experiment 6 test'); END IF; END//
+DELIMITER ;
+CALL transfer_employee(1001,2);
+SELECT emp_id,full_name,dept_id FROM exp3_employee WHERE emp_id=1001;
+UPDATE exp3_employee SET salary=salary+500 WHERE emp_id=1001;
+SELECT audit_id,emp_id,old_salary,new_salary,changed_by FROM exp6_salary_audit;
+DELIMITER //
+CREATE PROCEDURE exp6_test_invalid_employee()
+BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 'Invalid employee rejected' AS validation_result; CALL transfer_employee(9999,2); END//
+CREATE PROCEDURE exp6_test_invalid_department()
+BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 'Invalid department rejected' AS validation_result; CALL transfer_employee(1001,9999); END//
+CREATE PROCEDURE exp6_test_negative_salary()
+BEGIN DECLARE CONTINUE HANDLER FOR SQLEXCEPTION SELECT 'Negative salary rejected by trigger' AS validation_result; UPDATE exp3_employee SET salary=-1 WHERE emp_id=1001; END//
+DELIMITER ;
+CALL exp6_test_invalid_employee();
+CALL exp6_test_invalid_department();
+CALL exp6_test_negative_salary();
+SELECT emp_id,salary FROM exp3_employee WHERE emp_id=1001;
+SELECT COUNT(*) AS audit_rows FROM exp6_salary_audit;
