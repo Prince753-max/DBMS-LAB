@@ -1,0 +1,161 @@
+DBMS Experiment 3 - ByteXL Execution Output
+
++--------+-------------+-------------------+-----------+
+| emp_id | full_name   | designation       | salary    |
++--------+-------------+-------------------+-----------+
+|   1028 | Employee 28 | Project Lead      | 108000.00 |
+|   1006 | Employee 06 | Team Lead         | 105000.00 |
+|   1021 | Employee 21 | Finance Manager   |  99000.00 |
+|   1011 | Employee 11 | Regional Manager  |  98000.00 |
+|   1030 | Employee 30 | Data Scientist    |  95000.00 |
+|   1026 | Employee 26 | Data Scientist    |  92000.00 |
+|   1003 | Employee 03 | Senior Engineer   |  91000.00 |
+|   1015 | Employee 15 | HR Manager        |  88000.00 |
+|   1005 | Employee 05 | Data Engineer     |  83000.00 |
+|   1024 | Employee 24 | Financial Analyst |  79000.00 |
+|   1009 | Employee 09 | Account Manager   |  78000.00 |
+|   1020 | Employee 20 | Financial Analyst |  76000.00 |
+|   1027 | Employee 27 | Research Analyst  |  74000.00 |
+|   1002 | Employee 02 | Software Engineer |  72000.00 |
+|   1022 | Employee 22 | Auditor           |  71000.00 |
++--------+-------------+-------------------+-----------+
++-------------+---------------------+
+| full_name   | designation         |
++-------------+---------------------+
+| Employee 01 | Database Analyst    |
+| Employee 02 | Software Engineer   |
+| Employee 03 | Senior Engineer     |
+| Employee 04 | QA Engineer         |
+| Employee 05 | Data Engineer       |
+| Employee 06 | Team Lead           |
+| Employee 07 | Sales Executive     |
+| Employee 08 | Sales Analyst       |
+| Employee 09 | Account Manager     |
+| Employee 10 | Sales Executive     |
+| Employee 11 | Regional Manager    |
+| Employee 12 | Sales Analyst       |
+| Employee 13 | HR Executive        |
+| Employee 14 | Recruiter           |
+| Employee 15 | HR Manager          |
+| Employee 16 | Training Specialist |
+| Employee 17 | HR Executive        |
+| Employee 18 | Recruiter           |
+| Employee 19 | Accountant          |
+| Employee 20 | Financial Analyst   |
+| Employee 21 | Finance Manager     |
+| Employee 22 | Auditor             |
+| Employee 23 | Accountant          |
+| Employee 24 | Financial Analyst   |
+| Employee 25 | Research Associate  |
+| Employee 26 | Data Scientist      |
+| Employee 27 | Research Analyst    |
+| Employee 28 | Project Lead        |
+| Employee 29 | Research Associate  |
+| Employee 30 | Data Scientist      |
++-------------+---------------------+
++-----------------+----------------+----------------+----------------+----------------+
+| department_name | employee_count | average_salary | minimum_salary | maximum_salary |
++-----------------+----------------+----------------+----------------+----------------+
+| Research        |              6 |       84166.67 |       67000.00 |      108000.00 |
+| Engineering     |              6 |       80000.00 |       61000.00 |      105000.00 |
+| Finance         |              6 |       74833.33 |       60000.00 |       99000.00 |
+| Sales           |              6 |       68000.00 |       51000.00 |       98000.00 |
+| Human Resources |              6 |       62333.33 |       52000.00 |       88000.00 |
++-----------------+----------------+----------------+----------------+----------------+
++-----------------+----------------+----------------+
+| department_name | employee_count | average_salary |
++-----------------+----------------+----------------+
+| Research        |              6 |       84166.67 |
+| Engineering     |              6 |       80000.00 |
+| Finance         |              6 |       74833.33 |
+| Sales           |              6 |       68000.00 |
+| Human Resources |              6 |       62333.33 |
++-----------------+----------------+----------------+
++-------------+-----------+-------------+
+| full_name   | salary    | salary_band |
++-------------+-----------+-------------+
+| Employee 28 | 108000.00 | High        |
+| Employee 06 | 105000.00 | High        |
+| Employee 21 |  99000.00 | High        |
+| Employee 11 |  98000.00 | High        |
+| Employee 30 |  95000.00 | High        |
+| Employee 26 |  92000.00 | High        |
+| Employee 03 |  91000.00 | High        |
+| Employee 15 |  88000.00 | Medium      |
+| Employee 05 |  83000.00 | Medium      |
+| Employee 24 |  79000.00 | Medium      |
+| Employee 09 |  78000.00 | Medium      |
+| Employee 20 |  76000.00 | Medium      |
+| Employee 27 |  74000.00 | Medium      |
+| Employee 02 |  72000.00 | Medium      |
+| Employee 22 |  71000.00 | Medium      |
+| Employee 29 |  69000.00 | Medium      |
+| Employee 01 |  68000.00 | Medium      |
+| Employee 25 |  67000.00 | Medium      |
+| Employee 12 |  65000.00 | Medium      |
+| Employee 23 |  64000.00 | Entry       |
+| Employee 16 |  63000.00 | Entry       |
+| Employee 08 |  62000.00 | Entry       |
+| Employee 04 |  61000.00 | Entry       |
+| Employee 19 |  60000.00 | Entry       |
+| Employee 17 |  59000.00 | Entry       |
+| Employee 13 |  57000.00 | Entry       |
+| Employee 18 |  55000.00 | Entry       |
+| Employee 07 |  54000.00 | Entry       |
+| Employee 14 |  52000.00 | Entry       |
+| Employee 10 |  51000.00 | Entry       |
++-------------+-----------+-------------+
++-----------------+-------------------------+------------+
+| project_name    | assigned_employee_count | budget     |
++-----------------+-------------------------+------------+
+| Data Warehouse  |                       6 | 1500000.00 |
+| Security Audit  |                       6 |  520000.00 |
+| Campus Connect  |                       5 |  850000.00 |
+| Customer Portal |                       5 |  975000.00 |
+| Smart Inventory |                       5 | 1200000.00 |
+| Mobile App      |                       4 | 1100000.00 |
+| Sales Analytics |                       4 |  730000.00 |
+| Payroll Upgrade |                       3 |  640000.00 |
++-----------------+-------------------------+------------+
++-------------+-----------------+-----------------+----------------------+
+| full_name   | department_name | project_name    | project_role         |
++-------------+-----------------+-----------------+----------------------+
+| Employee 01 | Engineering     | Campus Connect  | Database Analyst     |
+| Employee 01 | Engineering     | Data Warehouse  | Data Consultant      |
+| Employee 02 | Engineering     | Smart Inventory | Developer            |
+| Employee 03 | Engineering     | Data Warehouse  | Technical Lead       |
+| Employee 03 | Engineering     | Smart Inventory | Technical Reviewer   |
+| Employee 04 | Engineering     | Mobile App      | QA Engineer          |
+| Employee 05 | Engineering     | Data Warehouse  | Data Engineer        |
+| Employee 05 | Engineering     | Security Audit  | Security Analyst     |
+| Employee 06 | Engineering     | Security Audit  | Project Lead         |
+| Employee 19 | Finance         | Payroll Upgrade | Accountant           |
+| Employee 20 | Finance         | Customer Portal | Cost Analyst         |
+| Employee 20 | Finance         | Data Warehouse  | Financial Analyst    |
+| Employee 21 | Finance         | Smart Inventory | Project Sponsor      |
+| Employee 22 | Finance         | Security Audit  | Auditor              |
+| Employee 23 | Finance         | Sales Analytics | Accountant           |
+| Employee 24 | Finance         | Data Warehouse  | Financial Analyst    |
+| Employee 13 | Human Resources | Payroll Upgrade | HR Coordinator       |
+| Employee 14 | Human Resources | Mobile App      | Recruiter            |
+| Employee 15 | Human Resources | Mobile App      | Training Lead        |
+| Employee 15 | Human Resources | Payroll Upgrade | Project Lead         |
+| Employee 16 | Human Resources | Campus Connect  | Training Coordinator |
+| Employee 17 | Human Resources | Customer Portal | HR Coordinator       |
+| Employee 18 | Human Resources | Security Audit  | Recruiter            |
+| Employee 25 | Research        | Data Warehouse  | Researcher           |
+| Employee 26 | Research        | Security Audit  | Security Researcher  |
+| Employee 26 | Research        | Smart Inventory | Data Scientist       |
+| Employee 27 | Research        | Mobile App      | Research Analyst     |
+| Employee 28 | Research        | Security Audit  | Project Lead         |
+| Employee 29 | Research        | Campus Connect  | Researcher           |
+| Employee 30 | Research        | Customer Portal | Data Scientist       |
+| Employee 07 | Sales           | Sales Analytics | Sales Coordinator    |
+| Employee 08 | Sales           | Campus Connect  | Sales Consultant     |
+| Employee 08 | Sales           | Customer Portal | Business Analyst     |
+| Employee 09 | Sales           | Sales Analytics | Account Manager      |
+| Employee 10 | Sales           | Campus Connect  | Sales Coordinator    |
+| Employee 11 | Sales           | Customer Portal | Project Sponsor      |
+| Employee 12 | Sales           | Sales Analytics | Reporting Analyst    |
+| Employee 12 | Sales           | Smart Inventory | Business Analyst     |
++-------------+-----------------+-----------------+----------------------+
