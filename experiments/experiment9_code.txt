@@ -1,0 +1,99 @@
+/* DBMS Practical - Experiment 9: Railway Booking Indexes
+   Prepared by: Adarsh Tiwari
+   Student UID: 25LBCS3047
+   Dialect: MySQL 8
+   Dataset: exactly 5,000 deterministic bookings.
+   Compare identical queries with only PRIMARY, a single-column index,
+   then only PRIMARY plus a composite index. No FORCE INDEX is used.
+   Timings are one measured pass in microseconds, not universal speed claims.
+*/
+CREATE TABLE exp9_digits (d INT PRIMARY KEY);
+INSERT INTO exp9_digits VALUES(0),(1),(2),(3),(4),(5),(6),(7),(8),(9);
+CREATE TABLE exp9_booking (
+ booking_id INT PRIMARY KEY, passenger_name VARCHAR(60) NOT NULL,
+ train_id INT NOT NULL, journey_date DATE NOT NULL,
+ booking_status VARCHAR(12) NOT NULL, fare DECIMAL(10,2) NOT NULL,
+ seat_class VARCHAR(12) NOT NULL
+) ENGINE=InnoDB;
+INSERT INTO exp9_booking
+SELECT n+1,CONCAT('Passenger ',n+1),100+MOD(n,100),
+ DATE_ADD('2026-09-01',INTERVAL FLOOR(n/100) DAY),
+ ELT(1+MOD(FLOOR(n/7),3),'Confirmed','Waiting','Cancelled'),
+ 250+MOD(n*37,4750),ELT(1+MOD(n,3),'Sleeper','AC3','AC2')
+FROM (SELECT a.d+10*b.d+100*c.d+1000*d.d AS n
+ FROM exp9_digits a CROSS JOIN exp9_digits b
+ CROSS JOIN exp9_digits c CROSS JOIN exp9_digits d) numbers WHERE n<5000;
+CREATE TABLE exp9_benchmark (
+ phase VARCHAR(30), query_name VARCHAR(30), matches INT, elapsed_us BIGINT
+);
+SELECT VERSION() AS mysql_version;
+SELECT COUNT(*) AS total_bookings,COUNT(DISTINCT train_id) AS trains
+FROM exp9_booking;
+ANALYZE TABLE exp9_booking;
+
+-- 1. Baseline: no secondary index, full scan expected.
+SELECT '1. Before secondary indexes' AS phase;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking WHERE train_id=120;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking WHERE train_id=120;
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('No secondary index','Train equality',@matches,@elapsed);
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('No secondary index','Train and date range',@matches,@elapsed);
+
+-- 2. Single index: train equality lookup, date checked afterwards.
+CREATE INDEX exp9_idx_train ON exp9_booking(train_id);
+ANALYZE TABLE exp9_booking;
+SELECT '2. Single-column index on train_id' AS phase;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking WHERE train_id=120;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking WHERE train_id=120;
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('Single index','Train equality',@matches,@elapsed);
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('Single index','Train and date range',@matches,@elapsed);
+
+-- 3. Composite index: leftmost prefix supports equality; both columns
+-- support a covering range scan for train plus date.
+DROP INDEX exp9_idx_train ON exp9_booking;
+CREATE INDEX exp9_idx_train_date ON exp9_booking(train_id,journey_date);
+ANALYZE TABLE exp9_booking;
+SELECT '3. Composite index on train_id and journey_date' AS phase;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking WHERE train_id=120;
+EXPLAIN SELECT COUNT(*) FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+EXPLAIN ANALYZE SELECT COUNT(*) FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking WHERE train_id=120;
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('Composite index','Train equality',@matches,@elapsed);
+SET @started=SYSDATE(6);
+SELECT COUNT(*) INTO @matches FROM exp9_booking
+WHERE train_id=120 AND journey_date>='2026-09-10' AND journey_date<'2026-09-21';
+SET @elapsed=TIMESTAMPDIFF(MICROSECOND,@started,SYSDATE(6));
+INSERT INTO exp9_benchmark VALUES('Composite index','Train and date range',@matches,@elapsed);
+
+-- 4. Results and semantic consistency across all phases.
+SELECT * FROM exp9_benchmark ORDER BY query_name,
+ FIELD(phase,'No secondary index','Single index','Composite index');
+SELECT query_name,COUNT(DISTINCT matches)=1 AS results_unchanged
+FROM exp9_benchmark GROUP BY query_name ORDER BY query_name;
+SELECT b.query_name,b.elapsed_us AS baseline_us,c.elapsed_us AS composite_us,
+ ROUND(b.elapsed_us/NULLIF(c.elapsed_us,0),2) AS observed_speedup
+FROM exp9_benchmark b JOIN exp9_benchmark c ON c.query_name=b.query_name
+WHERE b.phase='No secondary index' AND c.phase='Composite index';
+SHOW INDEX FROM exp9_booking;
+-- Costs: extra storage and maintenance on INSERT/UPDATE/DELETE.
+-- A date-only search does not use the efficient leftmost train_id prefix.
+-- EXPLAIN estimates and small-data timings vary with statistics/cache/load.

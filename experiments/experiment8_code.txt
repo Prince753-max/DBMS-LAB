@@ -1,0 +1,272 @@
+/* DBMS Practical - Experiment 8: Transactions and Isolation
+   Prepared by: Adarsh Tiwari
+   Student UID: 25LBCS3047
+   Dialect: MySQL 8, InnoDB
+   Five self-contained batches, including real concurrent DB sessions.
+   Session A is this client; scheduled events run Session B on the same DB.
+   Requires EVENT privilege and @@event_scheduler=ON (verified in ByteXL).
+   Run each numbered BATCH separately in ByteXL due to its time limit.
+   A standard MySQL client can run the complete file in one pass.
+   DELIMITER is a MySQL client directive used for the event procedures.
+*/
+
+-- BATCH 1: Banking transactions (run this batch by itself).
+CREATE TABLE exp8_accounts (
+ account_id INT PRIMARY KEY, holder_name VARCHAR(60) NOT NULL,
+ balance DECIMAL(12,2) NOT NULL CHECK(balance>=0)
+) ENGINE=InnoDB;
+INSERT INTO exp8_accounts VALUES
+(1,'Adarsh Tiwari',10000),(2,'Ananya Verma',5000),(3,'Rohan Singh',2000);
+SELECT VERSION() AS mysql_version, CONNECTION_ID() AS connection_id;
+SELECT '1. Initial balances' AS step;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+
+-- 1. Successful transfer: debit and credit commit atomically.
+BEGIN;
+UPDATE exp8_accounts SET balance=balance-1000 WHERE account_id=1;
+UPDATE exp8_accounts SET balance=balance+1000 WHERE account_id=2;
+COMMIT;
+SELECT '2. COMMIT: transfer 1000 from account 1 to account 2' AS step;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+SELECT SUM(balance) AS conserved_total FROM exp8_accounts;
+
+-- 2. Simulated failure after debit but before credit; roll back the debit.
+BEGIN;
+UPDATE exp8_accounts SET balance=balance-700 WHERE account_id=1;
+SELECT '3. Simulated failure after debit; temporary uncommitted balance' AS step;
+SELECT account_id,balance FROM exp8_accounts WHERE account_id=1;
+ROLLBACK;
+SELECT '4. ROLLBACK restored the incomplete transfer' AS step;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+
+-- 3. Partial rollback: retain a valid transfer, discard an unfinished debit.
+BEGIN;
+UPDATE exp8_accounts SET balance=balance-500 WHERE account_id=1;
+UPDATE exp8_accounts SET balance=balance+500 WHERE account_id=2;
+SAVEPOINT valid_transfer;
+UPDATE exp8_accounts SET balance=balance-300 WHERE account_id=2;
+SELECT '5. Failure in second transfer after SAVEPOINT' AS step;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+ROLLBACK TO SAVEPOINT valid_transfer;
+RELEASE SAVEPOINT valid_transfer;
+COMMIT;
+SELECT '6. First transfer committed; second debit undone' AS step;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+SELECT SUM(balance) AS conserved_total FROM exp8_accounts;
+
+-- 4. Safe transfer guard without stored-routine delimiters.
+-- Update both accounts in one statement only if funds and both accounts exist.
+SET @transfer_amount=20000;
+BEGIN;
+SELECT balance INTO @available FROM exp8_accounts WHERE account_id=1 FOR UPDATE;
+SELECT COUNT(*) INTO @destination_exists FROM exp8_accounts WHERE account_id=2;
+UPDATE exp8_accounts
+SET balance=balance+CASE WHEN account_id=1 THEN -@transfer_amount ELSE @transfer_amount END
+WHERE account_id IN (1,2) AND @transfer_amount>0
+ AND @available>=@transfer_amount AND @destination_exists=1;
+SET @affected=ROW_COUNT();
+ROLLBACK;
+SELECT '7. Insufficient-funds attempt rejected, no rows changed' AS step;
+SELECT @affected AS affected_rows, @available AS available_balance,
+ @transfer_amount AS requested_amount;
+
+-- 5. Select all four isolation levels between transactions.
+-- This checks configuration; it does NOT claim two-session observations.
+SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+SELECT @@transaction_isolation AS configured_isolation;
+BEGIN; SELECT SUM(balance) AS total_balance FROM exp8_accounts; ROLLBACK;
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+SELECT @@transaction_isolation AS configured_isolation;
+BEGIN; SELECT SUM(balance) AS total_balance FROM exp8_accounts; ROLLBACK;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT @@transaction_isolation AS configured_isolation;
+BEGIN; SELECT SUM(balance) AS total_balance FROM exp8_accounts; ROLLBACK;
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+SELECT @@transaction_isolation AS configured_isolation;
+BEGIN; SELECT SUM(balance) AS total_balance FROM exp8_accounts; ROLLBACK;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+SELECT '8. Final checks: 3 accounts, nonnegative balances, total 17000' AS step;
+SELECT COUNT(*) AS account_count,MIN(balance) AS minimum_balance,
+ SUM(balance) AS total_balance,SUM(balance<0) AS negative_balances
+FROM exp8_accounts;
+SELECT * FROM exp8_accounts ORDER BY account_id;
+
+
+-- BATCH 2: READ UNCOMMITTED dirty read (run this batch by itself).
+-- A is the main client. Scheduled event B is a separate actual DB session.
+-- Requires EVENT privilege and event_scheduler=ON; no global setting changes.
+CREATE TABLE exp8_ru_values (id INT PRIMARY KEY,balance INT NOT NULL) ENGINE=InnoDB;
+INSERT INTO exp8_ru_values VALUES(1,1000);
+CREATE TABLE exp8_ru_trace (session_b_id BIGINT,observed_balance INT,observed_rows INT) ENGINE=InnoDB;
+SELECT 'READ UNCOMMITTED dirty read' AS test_name,
+ CONNECTION_ID() AS session_a_id,@@event_scheduler AS event_scheduler;
+DELIMITER //
+CREATE PROCEDURE exp8_ru_worker()
+BEGIN
+ DECLARE v_balance INT;
+ SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+ SELECT balance INTO v_balance FROM exp8_ru_values WHERE id=1;
+ INSERT INTO exp8_ru_trace VALUES(CONNECTION_ID(),v_balance,1);
+END//
+DELIMITER ;
+CREATE EVENT exp8_ru_event ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 SECOND
+DO CALL exp8_ru_worker();
+-- A leaves a write uncommitted; B reads it and records the value.
+BEGIN;
+UPDATE exp8_ru_values SET balance=900 WHERE id=1;
+DO SLEEP(2);
+ROLLBACK;
+SELECT t.session_b_id,t.observed_balance AS dirty_balance,
+ v.balance AS committed_balance,t.observed_balance<>v.balance AS dirty_read_observed
+FROM exp8_ru_trace t JOIN exp8_ru_values v ON v.id=1;
+-- A trace row with a different connection ID proves B actually ran.
+SELECT COUNT(*) AS completed_workers,
+ COALESCE(SUM(session_b_id<>CONNECTION_ID()),0) AS workers_in_other_sessions
+FROM exp8_ru_trace;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- Expected: completed_workers=1 and workers_in_other_sessions=1.
+-- If either is zero, the scheduler did not finish: do not infer an outcome.
+
+
+-- BATCH 3: READ COMMITTED nonrepeatable read and phantom (run this batch by itself).
+-- A is the main client. Scheduled event B is a separate actual DB session.
+-- Requires EVENT privilege and event_scheduler=ON; no global setting changes.
+CREATE TABLE exp8_rc_values (id INT PRIMARY KEY,balance INT NOT NULL) ENGINE=InnoDB;
+INSERT INTO exp8_rc_values VALUES(1,1000);
+CREATE TABLE exp8_rc_trace (session_b_id BIGINT,observed_balance INT,observed_rows INT) ENGINE=InnoDB;
+SELECT 'READ COMMITTED nonrepeatable read and phantom' AS test_name,
+ CONNECTION_ID() AS session_a_id,@@event_scheduler AS event_scheduler;
+DELIMITER //
+CREATE PROCEDURE exp8_rc_worker()
+BEGIN
+ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+ START TRANSACTION;
+ UPDATE exp8_rc_values SET balance=1100 WHERE id=1;
+ INSERT INTO exp8_rc_values VALUES(2,200);
+ COMMIT;
+ INSERT INTO exp8_rc_trace SELECT CONNECTION_ID(),MAX(CASE WHEN id=1 THEN balance END),COUNT(*) FROM exp8_rc_values;
+END//
+DELIMITER ;
+CREATE EVENT exp8_rc_event ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 SECOND
+DO CALL exp8_rc_worker();
+SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+BEGIN;
+SELECT balance INTO @first_balance FROM exp8_rc_values WHERE id=1;
+SELECT COUNT(*) INTO @first_rows FROM exp8_rc_values;
+DO SLEEP(2);
+SELECT balance INTO @second_balance FROM exp8_rc_values WHERE id=1;
+SELECT COUNT(*) INTO @second_rows FROM exp8_rc_values;
+COMMIT;
+SELECT @first_balance AS first_balance,@second_balance AS second_balance,
+ @first_rows AS first_rows,@second_rows AS second_rows,
+ @first_balance<>@second_balance AS balance_changed_in_transaction,
+ @first_rows<>@second_rows AS row_count_changed_in_transaction;
+SELECT balance AS fresh_committed_balance FROM exp8_rc_values WHERE id=1;
+SELECT COUNT(*) AS fresh_committed_rows FROM exp8_rc_values;
+SELECT * FROM exp8_rc_trace;
+-- A trace row with a different connection ID proves B actually ran.
+SELECT COUNT(*) AS completed_workers,
+ COALESCE(SUM(session_b_id<>CONNECTION_ID()),0) AS workers_in_other_sessions
+FROM exp8_rc_trace;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- Expected: completed_workers=1 and workers_in_other_sessions=1.
+-- If either is zero, the scheduler did not finish: do not infer an outcome.
+
+
+-- BATCH 4: REPEATABLE READ consistent snapshot (run this batch by itself).
+-- A is the main client. Scheduled event B is a separate actual DB session.
+-- Requires EVENT privilege and event_scheduler=ON; no global setting changes.
+CREATE TABLE exp8_rr_values (id INT PRIMARY KEY,balance INT NOT NULL) ENGINE=InnoDB;
+INSERT INTO exp8_rr_values VALUES(1,1000);
+CREATE TABLE exp8_rr_trace (session_b_id BIGINT,observed_balance INT,observed_rows INT) ENGINE=InnoDB;
+SELECT 'REPEATABLE READ consistent snapshot' AS test_name,
+ CONNECTION_ID() AS session_a_id,@@event_scheduler AS event_scheduler;
+DELIMITER //
+CREATE PROCEDURE exp8_rr_worker()
+BEGIN
+ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+ START TRANSACTION;
+ UPDATE exp8_rr_values SET balance=1100 WHERE id=1;
+ INSERT INTO exp8_rr_values VALUES(2,200);
+ COMMIT;
+ INSERT INTO exp8_rr_trace SELECT CONNECTION_ID(),MAX(CASE WHEN id=1 THEN balance END),COUNT(*) FROM exp8_rr_values;
+END//
+DELIMITER ;
+CREATE EVENT exp8_rr_event ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 SECOND
+DO CALL exp8_rr_worker();
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN;
+SELECT balance INTO @first_balance FROM exp8_rr_values WHERE id=1;
+SELECT COUNT(*) INTO @first_rows FROM exp8_rr_values;
+DO SLEEP(2);
+SELECT balance INTO @second_balance FROM exp8_rr_values WHERE id=1;
+SELECT COUNT(*) INTO @second_rows FROM exp8_rr_values;
+COMMIT;
+SELECT @first_balance AS first_balance,@second_balance AS second_balance,
+ @first_rows AS first_rows,@second_rows AS second_rows,
+ @first_balance<>@second_balance AS balance_changed_in_transaction,
+ @first_rows<>@second_rows AS row_count_changed_in_transaction;
+SELECT balance AS fresh_committed_balance FROM exp8_rr_values WHERE id=1;
+SELECT COUNT(*) AS fresh_committed_rows FROM exp8_rr_values;
+SELECT * FROM exp8_rr_trace;
+-- A trace row with a different connection ID proves B actually ran.
+SELECT COUNT(*) AS completed_workers,
+ COALESCE(SUM(session_b_id<>CONNECTION_ID()),0) AS workers_in_other_sessions
+FROM exp8_rr_trace;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- Expected: completed_workers=1 and workers_in_other_sessions=1.
+-- If either is zero, the scheduler did not finish: do not infer an outcome.
+
+
+-- BATCH 5: SERIALIZABLE reader blocks writer (run this batch by itself).
+-- A is the main client. Scheduled event B is a separate actual DB session.
+-- Requires EVENT privilege and event_scheduler=ON; no global setting changes.
+CREATE TABLE exp8_serial_values (id INT PRIMARY KEY,balance INT NOT NULL) ENGINE=InnoDB;
+INSERT INTO exp8_serial_values VALUES(1,1000);
+CREATE TABLE exp8_serial_trace (session_b_id BIGINT,observed_balance INT,observed_rows INT) ENGINE=InnoDB;
+SELECT 'SERIALIZABLE reader blocks writer' AS test_name,
+ CONNECTION_ID() AS session_a_id,@@event_scheduler AS event_scheduler;
+DELIMITER //
+CREATE PROCEDURE exp8_serial_worker()
+BEGIN
+ SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
+ START TRANSACTION;
+ UPDATE exp8_serial_values SET balance=1100 WHERE id=1;
+ INSERT INTO exp8_serial_values VALUES(2,200);
+ COMMIT;
+ INSERT INTO exp8_serial_trace SELECT CONNECTION_ID(),MAX(CASE WHEN id=1 THEN balance END),COUNT(*) FROM exp8_serial_values;
+END//
+DELIMITER ;
+CREATE EVENT exp8_serial_event ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 1 SECOND
+DO CALL exp8_serial_worker();
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN;
+SELECT balance INTO @first_balance FROM exp8_serial_values WHERE id=1;
+SELECT COUNT(*) INTO @first_rows FROM exp8_serial_values;
+DO SLEEP(2);
+SELECT balance INTO @second_balance FROM exp8_serial_values WHERE id=1;
+SELECT COUNT(*) INTO @second_rows FROM exp8_serial_values;
+COMMIT;
+DO SLEEP(0.5);
+SELECT @first_balance AS first_balance,@second_balance AS second_balance,
+ @first_rows AS first_rows,@second_rows AS second_rows,
+ @first_balance<>@second_balance AS balance_changed_in_transaction,
+ @first_rows<>@second_rows AS row_count_changed_in_transaction;
+SELECT balance AS fresh_committed_balance FROM exp8_serial_values WHERE id=1;
+SELECT COUNT(*) AS fresh_committed_rows FROM exp8_serial_values;
+SELECT * FROM exp8_serial_trace;
+-- A trace row with a different connection ID proves B actually ran.
+SELECT COUNT(*) AS completed_workers,
+ COALESCE(SUM(session_b_id<>CONNECTION_ID()),0) AS workers_in_other_sessions
+FROM exp8_serial_trace;
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+-- Expected: completed_workers=1 and workers_in_other_sessions=1.
+-- If either is zero, the scheduler did not finish: do not infer an outcome.
+
+-- Interpretation:
+-- RU: B reads A's 900, but A rolls back to committed 1000 (dirty read).
+-- RC: A sees 1000/1 row, then 1100/2 rows (nonrepeatable read and phantom).
+-- RR: A keeps 1000/1 row; a fresh transaction sees B's 1100/2 rows.
+-- SERIALIZABLE: A's read locks block B until A commits, then B completes.
+-- The RR result concerns ordinary consistent reads in InnoDB; locking reads
+-- have different semantics. Events auto-drop after execution in this lab.
